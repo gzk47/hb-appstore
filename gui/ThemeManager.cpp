@@ -81,6 +81,9 @@ namespace HBAS::ThemeManager
     }
 
     void setAccentColor(rgb color) {
-        RootDisplay::mainDisplay->backgroundColor = color;
+        HBAS::ThemeManager::sidebarColor = toCST(color);
+        if (RootDisplay::mainDisplay) {
+            RootDisplay::mainDisplay->backgroundColor = color;
+        }
     }
 }

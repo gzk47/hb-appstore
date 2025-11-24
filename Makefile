@@ -7,6 +7,8 @@ APP_VERSION := 2.4-pre
 SOURCES     += gui console
 DEBUG_BUILD := 1
 
+CFLAGS += -Wall -Wextra -Werror
+
 # CFLAGS    += -DWII_MOCK=1
 # CFLAGS += -D_3DS_MOCK
 

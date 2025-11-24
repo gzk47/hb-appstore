@@ -2,6 +2,8 @@
 #include "../libs/chesto/src/DrawUtils.hpp"
 #include "../libs/chesto/src/colorspaces.hpp"
 
+using namespace Chesto;
+
 #define THEME_AUTO 0
 #define THEME_LIGHT 1
 #define THEME_DARK 2
