@@ -1,0 +1,73 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    container: ghcr.io/fortheusers/sealeo:evo
+    permissions:
+      contents: write
+
+    steps:
+      - name: Add safe.directory Update libnx
+        run: |
+          git config --global --add safe.directory "*"
+          # git clone --recurse-submodules https://github.com/switchbrew/libnx.git
+          # cd libnx
+          # make -j$(nproc) install
+
+      - name: Checkout latest code
+        uses: actions/checkout@v7
+        with:
+          clean: true
+          fetch-depth: 0
+          fetch-tags: true
+          submodules: recursive
+
+      - name: Extract version
+        run: |
+          APP_NAME="HB App Store"
+          VER_FILE="Makefile"
+          KEY="APP_VERSION"
+
+          VERSION="$(grep -F "$KEY" "$VER_FILE" | grep -oE '[0-9]+' | head -3 | paste -s -d '.')"
+          SHORT_HASH="$(git rev-parse --short=7 HEAD)"
+          echo "TAG_NAME=v${VERSION}-${SHORT_HASH}" >> "$GITHUB_ENV"
+          echo "RELEASE_NAME=${APP_NAME} v${VERSION} (${SHORT_HASH})" >> "$GITHUB_ENV"
+
+      - name: Build WiiU
+        run: |
+          make wiiu
+          mkdir -p build_output
+          cp appstore.wuhb build_output/
+          cp appstore.rpx build_output/
+
+      - name: Build Switch
+        run: |
+          make switch
+          mkdir -p build_output
+          cp appstore.nro build_output/
+
+      - name: Build Wii
+        run: |
+          make wii
+          mkdir -p build_output
+          cp appstore.dol build_output/
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: ${{ env.RELEASE_NAME }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            build_output/appstore.nro
+            build_output/appstore.wuhb
+            build_output/appstore.rpx
+            build_output/appstore.dol
